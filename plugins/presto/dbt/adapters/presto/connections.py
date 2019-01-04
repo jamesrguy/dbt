@@ -14,8 +14,22 @@ PRESTO_CREDENTIALS_CONTRACT = {
         'schema': {
             'type': 'string',
         },
+        'host': {
+            'type': 'string',
+        },
+        'port': {
+            'type': 'integer',
+            'minimum': 0,
+            'maximum': 65535,
+        },
+        'username': {
+            'type': 'string',
+        },
+        'password': {
+            'type': 'string',
+        },
     },
-    'required': ['database', 'schema'],
+    'required': ['database', 'schema', 'host'],
 }
 
 
@@ -23,9 +37,11 @@ class PrestoCredentials(Credentials):
     SCHEMA = PRESTO_CREDENTIALS_CONTRACT
 
     def _connection_keys(self):
-        # return an iterator of keys to pretty-print in 'dbt debug'
-        raise NotImplementedError
+        return ('host', 'port', 'database', 'username')
 
 
 class PrestoConnectionManager(SQLConnectionManager):
     TYPE = 'presto'
+    ALIASES = {
+        'catalog': 'database',
+    }
