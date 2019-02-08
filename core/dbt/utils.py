@@ -318,6 +318,10 @@ def get_materialization(node):
     return node.get('config', {}).get('materialized')
 
 
+def get_ephemeral_type(node):
+    return node.get('config', {}).get('ephemeral_type')
+
+
 def is_enabled(node):
     return node.get('config', {}).get('enabled') is True
 

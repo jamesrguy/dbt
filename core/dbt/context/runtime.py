@@ -1,4 +1,4 @@
-from dbt.utils import get_materialization, add_ephemeral_model_prefix
+from dbt.utils import get_materialization, get_ephemeral_type, add_ephemeral_model_prefix
 
 import dbt.clients.jinja
 import dbt.context.common
@@ -47,13 +47,16 @@ def ref(db_wrapper, model, config, manifest):
                                            target_model_package)
 
         is_ephemeral = (get_materialization(target_model) == 'ephemeral')
-
         if is_ephemeral:
-            model.set_cte(target_model_id, None)
-            return adapter.Relation.create(
-                type=adapter.Relation.CTE,
-                identifier=add_ephemeral_model_prefix(
-                    target_model_name)).quote(identifier=False)
+            is_subquery = (get_ephemeral_type(target_model) == 'subquery')
+            if is_subquery:
+                return '(\n{}\n)'.format(target_model.compiled_sql)
+            else:
+                model.set_cte(target_model_id, None)
+                return adapter.Relation.create(
+                   type=adapter.Relation.CTE,
+                   identifier=add_ephemeral_model_prefix(
+                        target_model_name)).quote(identifier=False)
         else:
             return adapter.Relation.create_from_node(config, target_model)
 
